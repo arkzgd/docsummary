@@ -52,14 +52,21 @@ def similar_sentence_pairs(sentences, threshold):
                 
     return result
 
-def summarize(nlp, file_name, threshold=0.95):
+def similar_matrix(sentences, threshold):
+    matrix = np.zeros((len(sentences), len(sentences)))
+    for idx1 in range(len(sentences)):
+        for idx2 in range(idx1+1, len(sentences)):
+            if sentences_similarity(sentences[idx1], sentences[idx2]) > threshold:
+                matrix[idx1][idx2] += 1
+                
+    return matrix
+
+def summarize(nlp, file_name, threshold=0.95, topMost=10):
     doc = get_doc(nlp, file_name)
     sents = get_sentences(doc)
-    summary = similar_sentence_pairs(sents, threshold)
-    log_string = "doc {0} has {1} sentences, abstracted to {2} pairs.\n".format(
-        file_name,
-        len(sents),
-        len(summary))
-    print(log_string)
+    matrix = similar_matrix(sents, threshold)
+    sum_by_row = [np.sum(row) for row in matrix]
+    sorted_with_index = sorted(zip(sum_by_row, range(len(sum_by_row))), reverse=True)[:topMost]
+    indices = [e[1] for e in sorted_with_index]
+    return [sents[i] for i in indices]
     
-    return summary
