@@ -67,6 +67,6 @@ def summarize(nlp, file_name, threshold=0.95, topMost=10):
     matrix = similar_matrix(sents, threshold)
     sum_by_row = [np.sum(row) for row in matrix]
     sorted_with_index = sorted(zip(sum_by_row, range(len(sum_by_row))), reverse=True)[:topMost]
-    indices = [e[1] for e in sorted_with_index]
+    indices = sorted([e[1] for e in sorted_with_index])
     return [sents[i] for i in indices]
     
