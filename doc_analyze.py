@@ -7,6 +7,8 @@ Created on Sat Aug 22 12:07:01 2020
 
 from nltk.cluster.util import cosine_distance
 import numpy as np
+import networkx as nx
+import math
 
 def get_doc(nlp, file_name, encoding_='utf-8'):
     return nlp(open(file_name, 'r', encoding=encoding_).read())
@@ -74,3 +76,35 @@ def summarize_pretty(nlp, file_name, threshold=0.95, top_most=10):
     sents = summarize(nlp, file_name, threshold, top_most)
     for i in range(len(sents)):
         print("{0}\n".format(sents[i].text.strip()))
+        
+def summarize_as_adj_edges(sents, threshold=0.95):
+    vert_list = [i for i in range(len(sents))]
+    edge_list = []
+    for idx1 in range(len(sents)):
+        for idx2 in range(len(sents)):
+            if idx1 != idx2 and sentences_similarity(
+                    sents[idx1], 
+                    sents[idx2]) > threshold:
+                edge_list.append((idx1, idx2))
+                
+    return (vert_list, edge_list)
+
+def summarize_as_adj_G(sents, threshold=0.95):
+    graph = summarize_as_adj_edges(sents, threshold)
+    G = nx.Graph()
+    for vert in graph[0]:
+        G.add_node(vert)
+        
+    for edge in graph[1]:
+        G.add_edge(edge[0], edge[1])
+        
+    return G
+    
+    
+def summarize_with_adj_grahp(nlp, file_name, threshold=0.95):
+    doc = get_doc(nlp, file_name)
+    sents = get_sentences(doc)
+    adj_graph = summarize_as_adj_G(sents, threshold)
+    sub_graphs = nx.connected_components(adj_graph)
+    max_sub_graph = max(sub_graphs, key=lambda x:len(x))
+    return [sents[i] for i in max_sub_graph]
