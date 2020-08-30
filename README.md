@@ -8,3 +8,5 @@ import spacy
 nlp = spacy.load("en_core_web_lg")
 
 summarize(nlp, file_name)
+
+You may also need "python -m spacy download en_vectors_web_lg"
